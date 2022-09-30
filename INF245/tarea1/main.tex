@@ -14,7 +14,8 @@
 \usepackage{parskip}
 \usepackage{hyperref}
 \usepackage{graphicx}
-\usepackage{karnaugh-map}
+\usepackage{tikz}
+\usetikzlibrary{karnaugh}
 
 % --------------------
 % DATOS DEL INFORME
@@ -61,7 +62,153 @@
 
 \section{Desarrollo de la tarea}
 
-aló
+En el enunciado se nos presenta un modelo conceptual de robot cuya funcionalidad es elegir entre 3 celdas para moverse dependiendo si hay enemigos o cargas en estas, y si el robot está por sobre un umbral de carga en su batería, estas condiciones están representadas en el caso de la batería por 1 pin de 4 bits, y tanto los enemigos como las cargas estan representados por 3 pines de 1 bit, y el circuito en su totalidad debe entregar 3 salidas de 1 bit, dependiendo de hacia donde debe moverse el robot.
+Además, se nos encarga modelar este robot y construir su circuito correspondiente en \textit{Logisim}, y para esto primero se debe analizar el enunciado.
+
+Se nos dice que la batería del robot está representada por un pin de 4 bits, y que el comportamiento del robot cambia dependiendo si esta entrada de 4 bits tiene un valor menor o igual que 3, por lo que si el pin tiene alguno de los siguientes valores, el comportamiento del robot cambia: \{0000, 0001, 0010, 0011\}. Viendo esto, podemos notar que se mantienen constantes los valores de los bits 3 y 2, entonces utilizando un selector de bits en Logisim, podemos transformar esta entrada de 4 bits en una de 1 bit mediante un subcircuito, donde será 1 si la entrada es menor que 4, y 0 para valores iguales o mayores que 4, tal como se muestra en la siguiente tabla:
+
+\begin{table}[!htbp]
+    \centering
+    \begin{tabular}{cccc|c}
+    $B_3$ & $B_2$ & $B_1$ & $B_0$ & $Y$ \\ \hline
+    0     & 0     & 0     & 0     & 1   \\
+    0     & 0     & 0     & 1     & 1   \\
+    0     & 0     & 1     & 0     & 1   \\
+    0     & 0     & 1     & 1     & 1   \\
+    0     & 1     & 0     & 0     & 0   \\
+    0     & 1     & 0     & 1     & 0   \\
+    0     & 1     & 1     & 0     & 0   \\
+    0     & 1     & 1     & 1     & 0   \\
+    1     & 0     & 0     & 0     & 0   \\
+    1     & 0     & 0     & 1     & 0   \\
+    1     & 0     & 1     & 0     & 0   \\
+    1     & 0     & 1     & 1     & 0   \\
+    1     & 1     & 0     & 0     & 0   \\
+    1     & 1     & 0     & 1     & 0   \\
+    1     & 1     & 1     & 0     & 0   \\
+    1     & 1     & 1     & 1     & 0  
+    \end{tabular}
+    \caption{Tabla de verdad del comportamiento de la batería.}
+    \label{tab1}
+\end{table}
+
+Una vez simplificado la primera entrada, es necesario trabajar las otras 6, pero una tabla de verdad de 6 variables sería muy grande al tener 128 filas, entonces utilizaremos mapas de Karnaugh, donde utilizaremos 2 mapas (para cuando el valor de la batería es 0 o 1) por cada salida (L, F, R), ya que además pueden mostrar la representacion con minterminos de la ecuación booleana del circuito.
+\newpage
+Entonces, para la salida \textbf{\textit{L}}, cuando la bateria es mayor que 4, el mapa de Karnaugh es:
+
+\begin{tikzpicture}[karnaugh, American style,
+                    thick,
+                    grp/.style n args={3}{#1,fill=#1!30,
+                    minimum width=#2\kmunitlength,
+                    minimum height=#3\kmunitlength,
+                    rounded corners=0.2\kmunitlength,
+                    fill opacity=0.6,
+                    rectangle,draw}]
+    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+        {0000000000000000111111111111111100000000000000000000000000000000}
+        {
+            \node[grp={blue}{3.8}{3.8}](n000) at (6.0,6.0) {};
+        }
+    
+\end{tikzpicture}
+
+Y cuando la bateria es menor que 4, el mapa de Karnaugh es:
+
+\begin{tikzpicture}[karnaugh, American style,
+                    thick,
+                    grp/.style n args={3}{#1,fill=#1!30,
+                    minimum width=#2\kmunitlength,
+                    minimum height=#3\kmunitlength,
+                    rounded corners=0.2\kmunitlength,
+                    fill opacity=0.6,
+                    rectangle,draw}]
+    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+        {0000100000001100000010100000111100000000000000000000000000000000}
+        {
+            \node[grp={blue}{3.8}{0.8}](n000) at (4.0,4.5) {};
+            \node[grp={red}{1.8}{1.8}](n001) at (5.0,5.0) {};
+            \node[grp={green}{0.8}{3.8}](n002) at (4.5,6.0) {};
+        }
+    
+\end{tikzpicture}
+
+\newpage
+Para la salida \textbf{\textit{F}}, cuando la bateria es mayor que 4, el mapa de Karnaugh es:
+
+\begin{tikzpicture}[karnaugh, American style,
+                    thick,
+                    grp/.style n args={3}{#1,fill=#1!30,
+                    minimum width=#2\kmunitlength,
+                    minimum height=#3\kmunitlength,
+                    rounded corners=0.2\kmunitlength,
+                    fill opacity=0.6,
+                    rectangle,draw}]
+    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+        {1111111111111111000000000000000011111111111111110000000000000000}
+        {
+            \node[grp={blue}{3.8}{7.8}](n000) at (2.0,4.0) {};
+        }
+    
+\end{tikzpicture}
+
+Y cuando la bateria es menor que 4, el mapa de Karnaugh es:
+
+\begin{tikzpicture}[karnaugh, American style,
+                    thick,
+                    grp/.style n args={3}{#1,fill=#1!30,
+                    minimum width=#2\kmunitlength,
+                    minimum height=#3\kmunitlength,
+                    rounded corners=0.2\kmunitlength,
+                    fill opacity=0.6,
+                    rectangle,draw}]
+    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+        {0011001100110011000000000000000000110011001100110000000000000000}
+        {
+            \node[grp={blue}{3.8}{1.8}](n000) at (2.0,6.0) {};
+            \node[grp={red}{3.8}{1.8}](n001) at (2.0,2.0) {};
+        }
+    
+\end{tikzpicture}
+
+\newpage
+Y para la salida \textbf{\textit{R}}, cuando la bateria es mayor que 4, el mapa de Karnaugh es:
+
+\begin{tikzpicture}[karnaugh, American style,
+                    thick,
+                    grp/.style n args={3}{#1,fill=#1!30,
+                    minimum width=#2\kmunitlength,
+                    minimum height=#3\kmunitlength,
+                    rounded corners=0.2\kmunitlength,
+                    fill opacity=0.6,
+                    rectangle,draw}]
+    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+        {0000000000000000000000000000000000000000000000001111111100000000}
+        {
+            \node[grp={blue}{3.8}{1.8}](n000) at (6.0,1.0) {};
+        }
+    
+\end{tikzpicture}
+
+Y cuando la bateria es menor que 4, el mapa de Karnaugh es:
+
+\begin{tikzpicture}[karnaugh, American style,
+                    thick,
+                    grp/.style n args={3}{#1,fill=#1!30,
+                    minimum width=#2\kmunitlength,
+                    minimum height=#3\kmunitlength,
+                    rounded corners=0.2\kmunitlength,
+                    fill opacity=0.6,
+                    rectangle,draw}]
+    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+        {0100010000000000010101010000000001000100000000000101010100000000}
+        {
+            \node[grp={blue}{1.8}{0.8}](n000) at (2.0,0.5) {};
+            \node[grp={blue}{1.8}{0.8}](n001) at (2.0,7.5) {};
+            \node[grp={red}{1.8}{1.8}](n002) at (6.0,1.0) {};
+            \node[grp={red}{1.8}{1.8}](n003) at (6.0,7.0) {};
+        }
+    
+\end{tikzpicture}
 
 \section{Resultados y análisis}
 aló 2
