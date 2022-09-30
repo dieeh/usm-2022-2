@@ -15,7 +15,16 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{tikz}
-\usetikzlibrary{karnaugh}
+\usetikzlibrary{karnaugh,arrows,automata}
+
+\tikzset{
+    %Define standard arrow tip
+    >=stealth',
+    % Define arrow style
+    pil/.style={
+           ->,
+           thick,}
+}
 
 % --------------------
 % DATOS DEL INFORME
@@ -143,10 +152,11 @@ Para la salida \textbf{\textit{F}}, cuando la bateria es mayor que 4, el mapa de
                     rounded corners=0.2\kmunitlength,
                     fill opacity=0.6,
                     rectangle,draw}]
-    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+    \karnaughmap{6}{$F(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
         {1111111111111111000000000000000011111111111111110000000000000000}
         {
-            \node[grp={blue}{3.8}{7.8}](n000) at (2.0,4.0) {};
+            \node[grp={blue}{3.8}{3.8}](n000) at (2.0,2.0) {};
+            \node[grp={blue}{3.8}{3.8}](n001) at (2.0,6.0) {};
         }
     
 \end{tikzpicture}
@@ -161,11 +171,11 @@ Y cuando la bateria es menor que 4, el mapa de Karnaugh es:
                     rounded corners=0.2\kmunitlength,
                     fill opacity=0.6,
                     rectangle,draw}]
-    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+    \karnaughmap{6}{$F(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
         {0011001100110011000000000000000000110011001100110000000000000000}
         {
             \node[grp={blue}{3.8}{1.8}](n000) at (2.0,6.0) {};
-            \node[grp={red}{3.8}{1.8}](n001) at (2.0,2.0) {};
+            \node[grp={blue}{3.8}{1.8}](n001) at (2.0,2.0) {};
         }
     
 \end{tikzpicture}
@@ -181,7 +191,7 @@ Y para la salida \textbf{\textit{R}}, cuando la bateria es mayor que 4, el mapa 
                     rounded corners=0.2\kmunitlength,
                     fill opacity=0.6,
                     rectangle,draw}]
-    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+    \karnaughmap{6}{$R(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
         {0000000000000000000000000000000000000000000000001111111100000000}
         {
             \node[grp={blue}{3.8}{1.8}](n000) at (6.0,1.0) {};
@@ -199,13 +209,15 @@ Y cuando la bateria es menor que 4, el mapa de Karnaugh es:
                     rounded corners=0.2\kmunitlength,
                     fill opacity=0.6,
                     rectangle,draw}]
-    \karnaughmap{6}{$L(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
+    \karnaughmap{6}{$R(E_L,E_F,E_R,C_L,C_F,C_R)$}{{$E_L$}{$E_F$}{$E_R$}{$C_L$}{$C_F$}{$C_R$}}%
         {0100010000000000010101010000000001000100000000000101010100000000}
         {
-            \node[grp={blue}{1.8}{0.8}](n000) at (2.0,0.5) {};
-            \node[grp={blue}{1.8}{0.8}](n001) at (2.0,7.5) {};
-            \node[grp={red}{1.8}{1.8}](n002) at (6.0,1.0) {};
-            \node[grp={red}{1.8}{1.8}](n003) at (6.0,7.0) {};
+            \node[grp={orange}{1.8}{1.8}](n002) at (6.0,1.0) {};
+            \node[grp={blue}{1.8}{1.8}](n003) at (6.0,7.0) {};
+            \node[grp={green}{1.8}{0.8}](n000) at (2.0,7.5) {};
+            \node[grp={green}{1.8}{0.8}](n001) at (6.0,7.5) {};
+            \node[grp={red}{1.8}{0.8}](n004) at (2.0,0.5) {};
+            \node[grp={red}{1.8}{0.8}](n005) at (6.0,0.5) {};
         }
     
 \end{tikzpicture}
