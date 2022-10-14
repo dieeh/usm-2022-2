@@ -1,5 +1,5 @@
 import pyodbc
-#import pandas as pd
+import pandas as pd
 #import re
 
 def opciones():
@@ -87,6 +87,18 @@ while option != 16:
             p_brand = p_brand.replace("'", "''")
             cursor.execute("INSERT INTO Productos VALUES ("+p_id+", '"+p_name+"', '"+p_desc+"', '"+p_brand+"', '"+cat+"', "+p_unit_price+")")
         file.close()
+
+        ##df = pd.read_csv("ProductosVF2.csv", sep=';')
+        ##for row in df.itertuples():
+        ##    cursor.execute("""
+        ##    INSERT INTO Productos (prod_id,prod_name,prod_description,prod_brand,category,prod_unit_price) VALUES (?, ?, ?, ?, ?, ?)
+        ##    """,
+        ##            row.prod_id,
+        ##            row.prod_name,
+        ##            row.prod_description,
+        ##            row.prod_brand,
+        ##            row.category,
+        ##            row.prod_unit_price)
 
     elif option == 16: ## Salir del programa
         cursor.execute("DROP TABLE Productos")
