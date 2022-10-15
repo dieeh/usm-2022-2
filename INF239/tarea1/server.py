@@ -1,40 +1,46 @@
 import pyodbc
 #import pandas as pd
-#import re
+import re
 
 def opciones():
-    print("1.- Mostrar mi carrito")
-    print("2.- Agregar productos al carrito")
-    print("3.- Mostrar top 5 productos más caros")
-    print("4.- Mostrar los 5 productos más caros según categoría especificada")
+    print("1.- Mostrar mi carrito") ##listo
+    print("2.- Agregar productos al carrito") ##listo
+    print("3.- Mostrar top 5 productos más caros") ##listo
+    print("4.- Mostrar los 5 productos más caros según categoría especificada") ##listo
     print("5.- Finalizar compra")
-    print("6.- Mostrar mi boleta")
-    print("7.- Mostrar valor total")
-    print("8.- Buscar producto segun nombre")
-    print("9.- Eliminar todos los productos del carrito")
-    print("10.- Eliminar producto específico del carrito")
-    print("11.- Crear view")
-    print("12.- Crear trigger")
-    print("13.- Crear procedimiento almacenado")
-    print("14.- Crear funcion")
-    print("15.- Crear tablas y cargar archivo")
-    print("16.- Salir del programa\n")
+    print("6.- Mostrar mi boleta") ##listo
+    print("7.- Mostrar valor total") ##listo
+    print("8.- Buscar producto segun nombre") ##listo
+    print("9.- Eliminar todos los productos del carrito") ##listo
+    print("10.- Eliminar un producto del carrito") ##listo
+    print("11.- Crear tablas y cargar archivo")
+    print("12.- Borrar tablas")
+    print("13.- Salir del programa")
+
+
+def obtener_ofertas():
+    cursor.execute("CREATE VIEW CarritoDesc AS SELECT prod_id,prod_description FROM Productos WHERE prod_id IN (SELECT prod_id FROM Carrito)")
+    cursor.execute("SELECT * FROM CarritoDesc WHERE prod_description LIKE '%pague%' AND prod_description LIKE '%lleve_[0-999]'")
+    cursor.execute("SELECT prod_descripcion FROM CarritoDesc WHERE prod_id = ")
+    
+def ofertas_fin():
+    print("")
     
 
 server = 'DIEGOPC\SQLEXPRESS'
 database = 'MultiUSM' 
-username = 'root' 
-password = 'diego123' 
+#username = 'root' 
+#password = 'diego123' 
 
 cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+'; DATABASE='+database+';Trusted_Connection=yes')
 cursor = cnxn.cursor()
 print("Conexión exitosa a la base de datos.\n")
 
 option = 0
-while option != 16:
+while option != 13:
     print("Elija una opción:")
     opciones()
-    option = int(input())
+    option = int(input("\n"))
 
 
     if option == 1: ## Mostrar mi carrito
@@ -44,74 +50,96 @@ while option != 16:
 
     
     elif option == 2: ## Agregar productos al carrito
-        cod = input("Ingrese el código del producto que desea agregar: ")
+        cod = input("Ingrese el código del producto que desea agregar: ")  
         quant = input("Ingrese la cantidad: ")
-        cursor.execute("INSERT INTO Carrito (SELECT prod_id,prod_name,prod_brand FROM Productos WHERE prod_id="+cod+") AND ")
+        hayono = cursor.execute("SELECT COUNT(*) FROM CARRITO WHERE prod_id="+cod+"")
+        if hayono != 0:
+            cursor.execute("UPDATE Carrito SET quantity +="+quant+" WHERE prod_id="+cod+"")
+        else:
+            cursor.execute("INSERT INTO Carrito (prod_id,prod_name,prod_brand) SELECT prod_id,prod_name,prod_brand FROM Productos WHERE prod_id="+cod+"")
+            cursor.execute("UPDATE Carrito SET quantity="+quant+" WHERE prod_id="+cod+"")
 
     
     elif option == 3: ## Mostrar top 5 productos más caros
+        print("Los productos más caros son:\n")
         cursor.execute("SELECT TOP 5 prod_name, prod_unit_price FROM Productos ORDER BY prod_unit_price DESC, prod_name")
         for row in cursor.fetchall():
             print(row)
+        print("")
 
     
     elif option == 4: ## Mostrar los 5 productos más caros según categoría especificada
         categ = input("Ingrese la categoría a mostrar: ")
+        print("Los productos más caros de esta categoría son:\n")
         cursor.execute("SELECT TOP 5 prod_name, prod_unit_price FROM Productos WHERE category = '"+categ+"' ORDER BY prod_unit_price DESC, prod_name")
         for row in cursor.fetchall():
             print(row)
+        print("")
     
     elif option == 5: ## Finalizar compra
+        obtener_ofertas()
+
         print('Nada todavia')
 
 
     elif option == 6: ## Mostrar mi boleta
-        print('Nada todavia')
-
+        cursor.execute("SELECT * FROM Boleta")
+        for row in cursor.fetchall():
+            print(row)
+        print("")
 
     elif option == 7: ## Mostrar valor total
-        print('Nada todavia')
+        cursor.execute("SELECT SUM(final_value) FROM Boleta")
+        for row in cursor.fetchall():
+            print(row)
+        print("")
 
 
-    elif option == 8: ## Buscar producto segun nombre
-        print('Nada todavia')
+    elif option == 8: ## Buscar producto segun nombre  ##
+        nombrecito = input("Ingrese nombre del producto a buscar: ")
+        print("Estos son los resultados cercanos a su busqueda:\n")
+        cursor.execute("SELECT * FROM Productos WHERE prod_name LIKE '%"+nombrecito+"%'")
+        for row in cursor.fetchall():
+            print(row)
+        print("")
 
 
     elif option == 9: ## Eliminar todos los productos del carrito
         cursor.execute("DROP TABLE Carrito")
-        cursor.execute("CREATE TABLE Carrito (prod_id BIGINT, prod_name VARCHAR(256), prod_brand VARCHAR(64), quantity INTEGER)")
+        cursor.execute("CREATE TABLE Carrito (prod_id BIGINT FOREIGN KEY REFERENCES Productos(prod_id), prod_name VARCHAR(256), prod_brand VARCHAR(64), quantity INTEGER)")
+        print("Elementos del carrito eliminados.\n")
 
 
     elif option == 10: ## Eliminar producto específico del carrito
-        print('Nada todavia')
+        eli = input("Ingrese nombre del producto a eliminar: ")
+        siono = cursor.execute("SELECT COUNT(*) FROM Carrito WHERE prod_name='"+eli+"'")
+        if siono == 1:
+            cursor.execute("DELETE FROM Carrito WHERE prod_name='"+eli+"'")
+        elif siono == 0:
+            print("Este producto no se encuentra en el carrito.")
+        else:
+            #cursor.execute("SELECT prod_id,prod_name,prod_description FROM Carrito WHERE prod_name='"+eli+"'")
+            #cursor.execute("SELECT prod_id,prod_name,prod_description FROM Productos WHERE prod_name IN (SELECT prod_name FROM Carrito) ='"+eli+"'")
+            cursor.execute("CREATE VIEW CarritoExtended AS SELECT prod_id,prod_name,prod_description FROM Productos WHERE prod_name IN (SELECT prod_name FROM Carrito)")
+            cursor.execute("SELECT * FROM CarritoExtended WHERE prod_name='"+eli+"'")
+            for row in cursor.fetchall():
+                print(row)
+            print("")
+            id_eli = input("Hay varios productos en el carrito con ese nombre.\nIngrese el ID del producto que desea eliminar: ")
+            cursor.execute("DELETE FROM Carrito WHERE prod_id="+id_eli+"")
+            print("Producto eliminado.\n")
 
 
-    elif option == 11: ## Crear view
-        print('Nada todavia')
-
-
-    elif option == 12: ## Crear trigger
-        print('Nada todavia')
-
-
-    elif option == 13: ## Crear procedimiento almacenado
-        print('Nada todavia')
-
-
-    elif option == 14: ## Crear funcion
-        print('Nada todavia')
-
-
-    elif option == 15: ## Crear tablas y cargar archivo
-        cursor.execute("IF OBJECT_ID('Productos') IS NOT NULL DROP TABLE Productos")
+    elif option == 11: ## Crear tablas y cargar archivo
         cursor.execute("IF OBJECT_ID('Carrito') IS NOT NULL DROP TABLE Carrito")
         cursor.execute("IF OBJECT_ID('Boleta') IS NOT NULL DROP TABLE Boleta")
         cursor.execute("IF OBJECT_ID('Oferta') IS NOT NULL DROP TABLE Oferta")
+        cursor.execute("IF OBJECT_ID('Productos') IS NOT NULL DROP TABLE Productos")
 
-        cursor.execute("CREATE TABLE Productos (prod_id BIGINT, prod_name VARCHAR(256), prod_description VARCHAR(256), prod_brand VARCHAR(64), category VARCHAR(64), prod_unit_price INTEGER, PRIMARY KEY(prod_id))")
-        cursor.execute("CREATE TABLE Carrito (prod_id BIGINT, prod_name VARCHAR(256), prod_brand VARCHAR(64), quantity INTEGER)")
-        cursor.execute("CREATE TABLE Boleta (prod_id BIGINT, offer VARCHAR(32), total_value INTEGER, final_value INTEGER)")
-        cursor.execute("CREATE TABLE Oferta (prod_id BIGINT, offer VARCHAR(32))")
+        cursor.execute("CREATE TABLE Productos (prod_id BIGINT PRIMARY KEY, prod_name VARCHAR(128), prod_description VARCHAR(256), prod_brand VARCHAR(32), category VARCHAR(64), prod_unit_price INTEGER)")
+        cursor.execute("CREATE TABLE Carrito (prod_id BIGINT FOREIGN KEY REFERENCES Productos(prod_id), prod_name VARCHAR(128), prod_brand VARCHAR(64), quantity INTEGER)")
+        cursor.execute("CREATE TABLE Boleta (prod_id BIGINT FOREIGN KEY REFERENCES Productos(prod_id), offer VARCHAR(32), total_value INTEGER, final_value INTEGER)")
+        cursor.execute("CREATE TABLE Oferta (prod_id BIGINT FOREIGN KEY REFERENCES Productos(prod_id), offer VARCHAR(32))")
 
         file = open("ProductosVF2.csv", "r", encoding="utf8")
         next(file)
@@ -138,11 +166,15 @@ while option != 16:
         ##            row.prod_unit_price)
 
 
-    elif option == 16: ## Salir del programa
-        cursor.execute("DROP TABLE Productos")
+    elif option == 12: ## Borrar tablas
         cursor.execute("DROP TABLE Carrito")
         cursor.execute("DROP TABLE Boleta")
         cursor.execute("DROP TABLE Oferta")
+        cursor.execute("DROP TABLE Productos")
+        print("Tablas borradas.\n")
+
+
+    elif option == 13: ## Salir del programa
         break
 
 
