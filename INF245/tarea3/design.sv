@@ -11,9 +11,9 @@ module alu(
     begin
         case(opcode)
         3'b000: //Suma 2-complemento
-            resultado = (~A_in + 1) + (~B_in + 1);
+            resultado = (~(A_in) + 8'h01) + (~(B_in) + 8'h01);
         3'b001: //Resta 2-complemento
-            resultado = (~A_in + 1) - (~B_in + 1);
+            resultado = (~(A_in) + 8'h01) - (~(B_in) + 8'h01);
         3'b010: //Suma magnitud
             resultado = A_in + B_in;
         3'b011: //Resta magnitud
@@ -34,6 +34,7 @@ module alu(
 
     always @(*)
     begin
+      flags = 8'h0;
       if (resultado[7]) begin  //N, el valor de salida es negativo
             flags[7] = 1;
         end else begin
@@ -47,11 +48,15 @@ module alu(
         end
 
         //if (conditions) begin //C, la operación produce un carry de salida
-        //    
+        //    flags[5] = 1;
+        //end else begin
+        //    flags[5] = 0;
         //end
 
         //if (conditions) begin //V, la operacion produce un overflow
-        //    
+        //    flags[4] = 1;
+        //end else begin
+        //    flags[4] = 0;
         //end
 
         if (A_in > B_in) begin //G, el valor de A es mayor que el valor de B
@@ -73,7 +78,9 @@ module alu(
         end
 
         //if (conditions) begin //P, el valor de salida tiene la misma cantidad de 0's y 1's
-        //    
+        //    flags[0] = 1;            
+        //end else begin
+        //    flags[0] = 0;
         //end
     end
 endmodule
