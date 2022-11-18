@@ -30,7 +30,7 @@ module alu(
             begin
                 temp_carry = 0;
                 temporal = A_in;
-                for (integer i = 0;i < B_in ; i++) begin
+                repeat(B_in) begin
                     temporal = {temporal[6:0],temporal[7]};
                 end
                 resultado = temporal;
@@ -39,7 +39,7 @@ module alu(
             begin
                 temp_carry = 0;
                 temporal = A_in;
-                for (integer i = 0;i< B_in ; i++) begin
+                repeat(B_in) begin
                     temporal = {temporal[0],temporal[7:1]};
                 end
                 resultado = temporal;
@@ -150,11 +150,39 @@ module alu(
         //    flags[4] = 0;
         //end
 
-        if (A_in > B_in) begin //G, el valor de A es mayor que el valor de B
-            flags[3] = 1;
-        end else begin
-            flags[3] = 0;
-        end
+        case (opcode)
+            3'b000:
+                begin
+                    if (A_in[7] == 0 &) begin
+                        
+                    end else begin
+                        
+                    end
+                end
+            3'b001:
+
+            3'b010:
+                if (A_in > B_in) begin
+                    flags[3] = 1;
+                end
+            3'b011:
+                if (A_in > B_in) begin
+                    flags[3] = 1;
+                end
+            3'b100:
+
+            3'b101:
+
+            3'b110:
+                if (A_in > B_in) begin
+                    flags[3] = 1;
+                end
+            3'b111:
+                if (A_in > B_in) begin
+                    flags[3] = 1;
+                end
+            default: flags[3] = 0;
+        endcase
 
         if (A_in == B_in) begin //Q, el valor de A es igual al de B
             flags[2] = 1;
