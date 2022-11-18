@@ -63,12 +63,31 @@ module alu(
     integer sum;
     always @(*)
     begin
-      flags = 8'h00;
-      if (resultado[7]) begin  //N, el valor de salida es negativo
-            flags[7] = 1;
-        end else begin
-            flags[7] = 0;
-        end
+        flags = 8'h00;
+
+        case (opcode)
+            3'b010:
+                flags[7] = 0;
+            3'b011:
+                flags[7] = 0;
+            3'b110:
+                flags[7] = 0;
+            3'b111:
+                flags[7] = 0;
+            default: begin
+                if (resultado[7]) begin  //N, el valor de salida es negativo
+                    flags[7] = 1;
+                end else begin
+                    flags[7] = 0;
+                end
+            end
+        endcase
+
+        //if (resultado[7]) begin  //N, el valor de salida es negativo
+        //    flags[7] = 1;
+        //end else begin
+        //    flags[7] = 0;
+        //end
 
         if (resultado == 0) begin //Z, el valor de salida es cero
             flags[6] = 1;
@@ -149,13 +168,7 @@ module alu(
             flags[1] = 0;
         end
 
-        sum = 0;
-        for (int i = 0;i<8 ;i++ ) begin
-          	if (resultado[i] == 1) begin
-                sum++;
-            end
-        end
-
+        sum = resultado[7] + resultado[6] + resultado[5] + resultado[4] + resultado[3] + resultado[2] + resultado[1] + resultado[0];
         if (sum == 4) begin //P, el valor de salida tiene la misma cantidad de 0's y 1's
             flags[0] = 1;            
         end else begin
