@@ -4,28 +4,34 @@ module alu(
         output logic [7:0] salida, flags
     );
     reg [7:0] resultado, A_comp, B_comp, temporal;
-    //assign salida = resultado; // ALU output
-    //assign tmp = {1'b0,A} + {1'b0,B};
     logic temp_carry = 0;
     always @(*)
     begin
         case(opcode)
         3'b000: //Suma 2-complemento
             begin
+                temp_carry = 0;
                 A_comp = ~A_in + 8'h01;
                 B_comp = ~B_in + 8'h01;
                 {temp_carry,resultado} = ~(A_comp + B_comp) + 8'h01;
             end
         3'b001: //Resta 2-complemento
             begin
+                temp_carry = 0;
                 A_comp = ~A_in + 8'h01;
                 B_comp = ~B_in + 8'h01;
                 {temp_carry,resultado} = ~(A_comp - B_comp) + 8'h01;
             end
         3'b010: //Suma magnitud
-            {temp_carry,resultado} = A_in + B_in;
+            begin
+                temp_carry = 0;
+                {temp_carry,resultado} = A_in + B_in;
+            end
         3'b011: //Resta magnitud
-            {temp_carry,resultado} = A_in - B_in;
+            begin
+                temp_carry = 1;
+                {temp_carry,resultado} = A_in - B_in;
+            end
         3'b100: //Rotación izquierda
             begin
                 temp_carry = 0;
@@ -46,21 +52,20 @@ module alu(
             end
         3'b110: //Duplicación
             begin
-                //temp_carry = 0;
-                //resultado = A_in << B_in;   
+                temp_carry = 0;
                 {temp_carry,resultado} = (A_in << B_in)|(A_in >> (8 - B_in));
             end
         3'b111: //División binaria
             begin
                 temp_carry = 0;
                 resultado = A_in >> B_in;  
-                //resultado = (A_in >> B_in)|(A_in << (8 - B_in));
             end
         default: resultado = 8'b0;
         endcase
     end
     assign salida = resultado;
     integer sum;
+    byte tempbit1, tempbit2;
     always @(*)
     begin
         flags = 8'h00;
@@ -83,12 +88,6 @@ module alu(
             end
         endcase
 
-        //if (resultado[7]) begin  //N, el valor de salida es negativo
-        //    flags[7] = 1;
-        //end else begin
-        //    flags[7] = 0;
-        //end
-
         if (resultado == 0) begin //Z, el valor de salida es cero
             flags[6] = 1;
         end else begin
@@ -97,19 +96,11 @@ module alu(
 
         if (temp_carry) begin //C, la operación produce un carry de salida
             flags[5] = 1;
+        end else if ((opcode == 3'b011) & (temp_carry == 0)) begin
+            flags[5] = 1;
         end else begin
             flags[5] = 0;
         end
-
-
-        //if ((A_in[7] && (B_in[7] == 0)) && (resultado[7] == 0)) begin
-        //    flags[4] = 1;
-        //end else if (((A_in[7] == 0) && B_in[7] == 0) && resultado[7]) begin
-        //    flags[4] = 1;
-        //end else begin
-        //    flags[4] = 0;
-        //end
-
 
         case (opcode)
             3'b000: //Suma 2-Complemento
@@ -144,23 +135,71 @@ module alu(
                 end
             default: flags[4] = 0;
         endcase
-        //if (conditions) begin //V, la operacion produce un overflow
-        //    flags[4] = 1;
-        //end else begin
-        //    flags[4] = 0;
-        //end
-
+        
         case (opcode)
             3'b000:
                 begin
-                    if (A_in[7] == 0 &) begin
+                    if (A_in[7] & (B_in[7] == 0)) begin
                         
-                    end else begin
-                        
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if ((A_in[7] == 0) & B_in[7]) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if (A_in[7] & B_in[7]) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if ((A_in[7] == 0) & (B_in[7] == 0)) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
                     end
                 end
             3'b001:
-
+                begin
+                    if (A_in[7] & (B_in[7] == 0)) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if ((A_in[7] == 0) & B_in[7]) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if (A_in[7] & B_in[7]) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if ((A_in[7] == 0) & (B_in[7] == 0)) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                end
             3'b010:
                 if (A_in > B_in) begin
                     flags[3] = 1;
@@ -170,9 +209,67 @@ module alu(
                     flags[3] = 1;
                 end
             3'b100:
-
+                begin
+                    if (A_in[7] & (B_in[7] == 0)) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if ((A_in[7] == 0) & B_in[7]) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if (A_in[7] & B_in[7]) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if ((A_in[7] == 0) & (B_in[7] == 0)) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                end
             3'b101:
-
+                begin
+                    if (A_in[7] & (B_in[7] == 0)) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if ((A_in[7] == 0) & B_in[7]) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if (A_in[7] & B_in[7]) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                    if ((A_in[7] == 0) & (B_in[7] == 0)) begin
+                        tempbit1 = A_in;
+                        tempbit2 = B_in;
+                        if (tempbit1 > tempbit2) begin
+                            flags[3] = 1;
+                        end
+                    end
+                end
             3'b110:
                 if (A_in > B_in) begin
                     flags[3] = 1;
