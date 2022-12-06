@@ -49,5 +49,4 @@ func1:
     add r7,r1,r2
     add r7,r7,r3
 end: wfi
-
 .end
